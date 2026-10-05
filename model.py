@@ -1,15 +1,35 @@
-from transformers import AutoTokenizer, T5ForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import AutoTokenizer, T5ForConditionalGeneration, Seq2SeqTrainingArguments, AutoConfig, Seq2SeqTrainer
 import tool
 from datasets import Dataset
 
-# load model
-print("loading tokenizers and models")
-model_name = "uer/t5-small-chinese-cluecorpussmall"
-tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=True)
-model = T5ForConditionalGeneration.from_pretrained(model_name,local_files_only=True)
 
+# set training mode: 
+# 1->train from pretrained model
+# 2->train from scratch
+# 3->train from checkpoint file
+TRAIN_MODE = 2
+
+# load model
+print("-"*10, "loading tokenizers and models", "-"*10)
+model_name = "uer/t5-small-chinese-cluecorpussmall"
+
+if TRAIN_MODE == 1:
+    tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=True)
+    model = T5ForConditionalGeneration.from_pretrained(model_name, local_files_only=True)
+elif TRAIN_MODE == 2:
+    # load config, do not load model
+    config = AutoConfig.from_pretrained(model_name, local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=True)
+    model = T5ForConditionalGeneration(config)
+elif TRAIN_MODE == 3:
+    checkpoint_path = ''
+    tokenizer = AutoTokenizer.from_pretrained(checkpoint_path, local_files_only=True)
+    model = T5ForConditionalGeneration.from_pretrained(checkpoint_path, local_files_only=True)
+    
 # load my dataset from list
+print("-"*10, "loading dataset from list", "-"*10)
 my_dataset = Dataset.from_list(tool.load_my_dataset(2))
+print("-"*10, "example from dataset: ", my_dataset[0], "-"*10)
 
 # process dataset
 MAX_LEN = 128
@@ -34,14 +54,14 @@ def tokenize_function(examples):
 split_dataset = my_dataset.train_test_split(test_size=0.1, seed=42)
 tokenized_train = split_dataset["train"].map(tokenize_function, batched=True, remove_columns=split_dataset["train"].column_names)
 tokenized_eval  = split_dataset["test"].map(tokenize_function, batched=True, remove_columns=split_dataset["test"].column_names)
-
-
+print("-"*10, "dataset ready", "-"*10)
+# set training super arguments
 training_args = Seq2SeqTrainingArguments(
-    output_dir="./models",
+    output_dir="./checkpoints",
     eval_strategy="epoch",          
     save_strategy="epoch",
     learning_rate=2e-5,
-    per_device_train_batch_size=50,
+    per_device_train_batch_size=50,  # batch size
     per_device_eval_batch_size=50,
     num_train_epochs=1,
     weight_decay=0.01,
@@ -62,6 +82,6 @@ trainer = Seq2SeqTrainer(
 
 print("begin training")
 trainer.train()
-print("finish training, model file saved to ./t5-finetuned-custom-final")
-trainer.save_model("./t5-finetuned-custom-final")  # save the model checkpoint
-tokenizer.save_pretrained("./t5-finetuned-custom-final")  # save the tokenizer
+print("finish training, model file saved to ./models")
+trainer.save_model("./models")  # save the model checkpoint
+tokenizer.save_pretrained("./models")  # save the tokenizer

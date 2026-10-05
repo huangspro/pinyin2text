@@ -1,11 +1,11 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-model_path = "./t5-finetuned-custom-final"
+model_path = "./models"
 
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
 
-text = "pinyin2text: 你好, nishishui"
+text = "pinyin2text: wasilafe·fumiqi·nijinsiji（；；，）shibolanyieluusbbaleiwuzhehebiaobujiawyifeifakdewudaojiqiaojbduijiaosekehuadeshenduerwenmingcb"
 
 inputs = tokenizer(
     text,

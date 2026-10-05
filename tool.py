@@ -40,12 +40,10 @@ def get_pinyin(text = "",
 
 # load text from a file into a list
 def get_text(file_path):
-    print("loading text from " + file_path)
     result = []
     with open(file_path, 'r', encoding='utf-8') as f:
         for i in f:
             result.append(i)
-    print("completed loading text from " + file_path)
     return result
     
 
@@ -55,7 +53,6 @@ def get_text(file_path):
 ]
 """
 def load_my_dataset(number_of_files):
-    print("building dataset")
     data = []
     dire = "./wiki2019zh_corpus"
     count = number_of_files  # control the number of files
@@ -71,6 +68,5 @@ def load_my_dataset(number_of_files):
     result = []
     for i in range(len(text)):
         result.append({"input": "pinyin2text: " + pinyin_text[i], "output": text[i]})
-    print("dataset ready")
     return result
     
