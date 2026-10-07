@@ -5,7 +5,7 @@ model_path = "./models"
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
 
-text = "pinyin2text: wasilafe·fumiqi·nijinsiji（；；，）shibolanyieluusbbaleiwuzhehebiaobujiawyifeifakdewudaojiqiaojbduijiaosekehuadeshenduerwenmingcb"
+text = "pinyin2text: yigerendaochufang"
 
 inputs = tokenizer(
     text,
@@ -19,7 +19,7 @@ outputs = model.generate(
     attention_mask=inputs["attention_mask"],
     max_new_tokens=128,
 )
-
+print(outputs)
 result = tokenizer.decode(
     outputs[0],
     skip_special_tokens=True
