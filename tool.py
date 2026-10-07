@@ -61,6 +61,7 @@ def load_my_dataset(number_of_files):
         if count>0:
             text = get_text(dire + "/" + i)  # return a list of sentences
             pinyin_text = [get_pinyin(x, True, 2, False if random.randint(1,100)>=50 else True, False if random.randint(1,100)>=50 else True, False if random.randint(1,100)>=50 else True) for x in text if x != ""]  # transform text into pinyin list
+            # pinyin_text = [get_pinyin(x, False, 0, False, False, False) for x in text if x != ""]  # transform text into pinyin list
             count -= 1
         else:
             break

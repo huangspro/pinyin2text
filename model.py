@@ -7,7 +7,7 @@ import sys
 
 
 model_name = 'uer/t5-small-chinese-cluecorpussmall'
-check_point = "checkpoints/"
+check_point = "checkpoints/checkpoint-4220"
 model_path = './models'
 #model_path = './added_word_clear_model'
 
@@ -37,8 +37,8 @@ elif TRAIN_MODE == 3:
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
     model = T5ForConditionalGeneration.from_pretrained(model_path, local_files_only=True)
 elif TRAIN_MODE == 4:
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint_path, local_files_only=True)
-    model = T5ForConditionalGeneration.from_pretrained(checkpoint_path, local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(check_point, local_files_only=True)
+    model = T5ForConditionalGeneration.from_pretrained(check_point, local_files_only=True)
     
     
     
@@ -109,7 +109,10 @@ trainer = Seq2SeqTrainer(
 
 
 print("begin training")
-trainer.train()
+if TRAIN_MODE == 4:
+    trainer.train(resume_from_checkpoint=check_point)
+else:
+    trainer.train()
 print("finish training, model file saved to ./models")
 trainer.save_model("./models")  # save the model checkpoint
 tokenizer.save_pretrained("./models")  # save the tokenizer
