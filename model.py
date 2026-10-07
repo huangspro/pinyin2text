@@ -8,8 +8,9 @@ import sys
 
 model_name = 'uer/t5-small-chinese-cluecorpussmall'
 check_point = "checkpoints/checkpoint-4220"
-model_path = './models'
-#model_path = './added_word_clear_model'
+# model_path = './models'
+# model_path = './added_word_clear_model'
+model_path = './added_word_pretrained_model'
 
 # set training mode: 
 # 1->train from official pretrained model
@@ -85,15 +86,16 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./checkpoints",
     eval_strategy="epoch",          
     save_strategy="epoch",
-    learning_rate=2e-5,
+    learning_rate=1e-4,
+    lr_scheduler_type="constant",
     per_device_train_batch_size=50,  # batch size
     per_device_eval_batch_size=50,
-    num_train_epochs=10,
-    weight_decay=0.01,
+    num_train_epochs=1,
+    weight_decay=0,
     save_total_limit=3,
     predict_with_generate=True,
     fp16=True,                       
-    logging_steps=50,
+    logging_steps=10,
 )
 trainer = Seq2SeqTrainer(
     model=model,
@@ -114,5 +116,5 @@ if TRAIN_MODE == 4:
 else:
     trainer.train()
 print("finish training, model file saved to ./models")
-trainer.save_model("./models")  # save the model checkpoint
-tokenizer.save_pretrained("./models")  # save the tokenizer
+trainer.save_model("./added_word_pretrained_model")  # save the model checkpoint
+tokenizer.save_pretrained("./added_word_pretrained_model")  # save the tokenizer
