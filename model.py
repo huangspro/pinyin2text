@@ -9,15 +9,15 @@ import sys
 model_name = 'uer/t5-small-chinese-cluecorpussmall'
 check_point = "checkpoints/checkpoint-4220"
 # model_path = './models'
-# model_path = './added_word_clear_model'
-model_path = './added_word_pretrained_model'
+model_path = './added_word_clear_model'
+# model_path = './added_word_pretrained_model'
 
 # set training mode: 
 # 1->train from official pretrained model
 # 2->train from scratch, but official model configure
 # 3->train from a trained model
 # 4->train from a check point
-TRAIN_MODE = 3
+TRAIN_MODE = 2
 
 
 
@@ -49,6 +49,7 @@ elif TRAIN_MODE == 4:
 # load my dataset from list
 print("-"*10, "loading dataset from list", "-"*10)
 my_dataset = Dataset.from_list(tool.load_my_dataset(1))
+print("example from dataset: ", my_dataset[20000])
 
 # process dataset
 MAX_LEN = 128
@@ -87,7 +88,6 @@ training_args = Seq2SeqTrainingArguments(
     eval_strategy="epoch",          
     save_strategy="epoch",
     learning_rate=1e-4,
-    lr_scheduler_type="constant",
     per_device_train_batch_size=50,  # batch size
     per_device_eval_batch_size=50,
     num_train_epochs=1,
@@ -95,7 +95,7 @@ training_args = Seq2SeqTrainingArguments(
     save_total_limit=3,
     predict_with_generate=True,
     fp16=True,                       
-    logging_steps=10,
+    logging_steps=500,
 )
 trainer = Seq2SeqTrainer(
     model=model,
@@ -115,6 +115,6 @@ if TRAIN_MODE == 4:
     trainer.train(resume_from_checkpoint=check_point)
 else:
     trainer.train()
-print("finish training, model file saved to ./models")
-trainer.save_model("./added_word_pretrained_model")  # save the model checkpoint
-tokenizer.save_pretrained("./added_word_pretrained_model")  # save the tokenizer
+print("finish training, model file saved to ", model_path)
+trainer.save_model(model_path)  # save the model checkpoint
+tokenizer.save_pretrained(model_path)  # save the tokenizer
