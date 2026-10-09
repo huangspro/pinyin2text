@@ -52,9 +52,9 @@ def get_text(file_path):
     {"input": "pinyin2text: nihao", "output": "你好"}
 ]
 """
-def load_my_dataset(number_of_files):
+def load_my_dataset(number_of_files, dataset_path):
     data = []
-    dire = "./wiki2019zh_corpus"
+    dire = dataset_path
     count = number_of_files  # control the number of files
     
     for i in os.listdir(dire):

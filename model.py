@@ -1,15 +1,18 @@
-from transformers import AutoTokenizer, T5ForConditionalGeneration, Seq2SeqTrainingArguments, AutoConfig, Seq2SeqTrainer
+from transformers import AutoTokenizer, MT5ForConditionalGeneration, T5ForConditionalGeneration, Seq2SeqTrainingArguments, AutoConfig, Seq2SeqTrainer
 import tool
 from datasets import Dataset
-import sys
+import sys, os
+from rich.console import Console
+from rich.panel import Panel
 
+console = Console()
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
-
-
-model_name = 'uer/t5-small-chinese-cluecorpussmall'
-check_point = "checkpoints/checkpoint-4220"
-# model_path = './models'
-model_path = './added_word_clear_model'
+dataset_path = "./small_dataset"
+model_name = 'google/mt5-base'
+# check_point = "checkpoints/checkpoint-4220"
+model_path = './models'
+# model_path = './added_word_clear_model'
 # model_path = './added_word_pretrained_model'
 
 # set training mode: 
@@ -17,7 +20,7 @@ model_path = './added_word_clear_model'
 # 2->train from scratch, but official model configure
 # 3->train from a trained model
 # 4->train from a check point
-TRAIN_MODE = 2
+TRAIN_MODE = 1
 
 
 
@@ -25,31 +28,37 @@ TRAIN_MODE = 2
 
 
 # load model
-print("-"*10, "loading tokenizers and models", "-"*10)
+console.print(Panel(
+    "loading " + model_name,
+    title="loading tokenizers and models",
+    border_style="cyan"
+))
 if TRAIN_MODE == 1:
-    tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=True)
-    model = T5ForConditionalGeneration.from_pretrained(model_name, local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=False)
+    model = MT5ForConditionalGeneration.from_pretrained(model_name, local_files_only=False)
 elif TRAIN_MODE == 2:
     # load config, do not load model
     config = AutoConfig.from_pretrained(model_name, local_files_only=True)
     tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=True)
-    model = T5ForConditionalGeneration(config)
+    model = MT5ForConditionalGeneration(config)
 elif TRAIN_MODE == 3:
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
-    model = T5ForConditionalGeneration.from_pretrained(model_path, local_files_only=True)
+    model = MT5ForConditionalGeneration.from_pretrained(model_path, local_files_only=True)
 elif TRAIN_MODE == 4:
     tokenizer = AutoTokenizer.from_pretrained(check_point, local_files_only=True)
-    model = T5ForConditionalGeneration.from_pretrained(check_point, local_files_only=True)
-    
-    
+    model = MT5ForConditionalGeneration.from_pretrained(check_point, local_files_only=True)
     
     
     
     
 # load my dataset from list
-print("-"*10, "loading dataset from list", "-"*10)
-my_dataset = Dataset.from_list(tool.load_my_dataset(1))
-print("example from dataset: ", my_dataset[20000])
+console.print(Panel(
+    "loading ",
+    title="loading dataset from list",
+    border_style="cyan"
+))
+my_dataset = Dataset.from_list(tool.load_my_dataset(1, dataset_path))
+
 
 # process dataset
 MAX_LEN = 128
@@ -87,15 +96,15 @@ training_args = Seq2SeqTrainingArguments(
     output_dir="./checkpoints",
     eval_strategy="epoch",          
     save_strategy="epoch",
-    learning_rate=1e-4,
-    per_device_train_batch_size=50,  # batch size
-    per_device_eval_batch_size=50,
+    learning_rate=2e-6,
+    per_device_train_batch_size=2,  # batch size
+    per_device_eval_batch_size=2,
     num_train_epochs=1,
     weight_decay=0,
     save_total_limit=3,
     predict_with_generate=True,
     fp16=True,                       
-    logging_steps=500,
+    logging_steps=50,
 )
 trainer = Seq2SeqTrainer(
     model=model,
@@ -110,7 +119,7 @@ trainer = Seq2SeqTrainer(
 
 
 
-print("begin training")
+
 if TRAIN_MODE == 4:
     trainer.train(resume_from_checkpoint=check_point)
 else:
